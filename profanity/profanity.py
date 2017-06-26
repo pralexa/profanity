@@ -4,7 +4,7 @@
 
 import os
 import random
-import re
+import string
 
 lines = None
 words = None
@@ -54,19 +54,20 @@ def contains_profanity(input_text):
     return input_text != censor(input_text)
 
 
-def censor(input_text):
+def censor(input_text, censor_chars=False):
     """ Returns the input string with profanity replaced with a random string
     of characters plucked from the censor_characters pool.
 
     """
-    ret = input_text
-    words = get_words()
-    for word in words:
-        curse_word = re.compile(re.escape(word), re.IGNORECASE)
-        cen = "".join(get_censor_char() for i in list(word))
-        ret = curse_word.sub(cen, ret)
-    return ret
+    ret = set(input_text.strip().lower().translate(None, string.punctuation).split())
+    bad_words = get_words()
 
+    to_censor = ret.intersection(words)
+
+    for word in to_censor:
+        input_text = input_text.replace(word, 'cheese')
+
+    return input_text
 
 def load_words(wordlist=None):
     """ Loads and caches the profanity word list. Input file (if provided)
@@ -79,5 +80,5 @@ def load_words(wordlist=None):
         filename = get_data('wordlist.txt')
         f = open(filename)
         wordlist = f.readlines()
-        wordlist = [w.strip() for w in wordlist if w]
+        wordlist = set([w.strip() for w in wordlist if w])
     words = wordlist
